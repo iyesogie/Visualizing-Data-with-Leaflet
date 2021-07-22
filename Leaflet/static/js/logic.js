@@ -1,64 +1,38 @@
-function createMap(earthquakes) {
 
-// Define Variables for Tile Layers
-var satelliteMap = L.tileLayer("https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={accessToken}", {
-    attribution: "Map data &copy; <a href=\"https://www.openstreetmap.org/\">OpenStreetMap</a> contributors, <a href=\"https://creativecommons.org/licenses/by-sa/2.0/\">CC-BY-SA</a>, Imagery © <a href=\"https://www.mapbox.com/\">Mapbox</a>",
-    tileSize: 512,
-    maxZoom: 18,
-    zoomOffset: -1,
-    id: "mapbox/streets-v11",
-    accessToken: API_KEY
-  });
-
-   // Create our map, giving it the map and earthquakes layers to display on load
-   var myMap = L.map("map", {
-    center: [
-      37.09, -95.71
-    ],
-    zoom: 5,
-    layers: [quakeMap, earthquakes]
-  });
-
-  quakeMap.addTo(myMap);
-}
-
-// Earthquakes & Tectonic Plates GeoJSON URL Variables
+// Earthquakes GeoJSON URL Variables
 var earthquakesURL = "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/significant_week.geojson"
 
 
-// Initialize & Create Two Separate LayerGroups: earthquakes & tectonicPlates
-var earthquakes = new L.LayerGroup();
-
-
 // Define Variables for Tile Layers
-var satelliteMap = L.tileLayer("https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={accessToken}", {
-    attribution: "Map data &copy; <a href=\"https://www.openstreetmap.org/\">OpenStreetMap</a> contributors, <a href=\"https://creativecommons.org/licenses/by-sa/2.0/\">CC-BY-SA</a>, Imagery © <a href=\"https://www.mapbox.com/\">Mapbox</a>",
+var EarthquakeMap = L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}', {
+    attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
     maxZoom: 18,
-    id: "mapbox.satellite",
-    accessToken: API_KEY
-});
+    id: 'mapbox/streets-v11',
+    tileSize: 512,
+    zoomOffset: -1,
+    accessToken: 'pk.eyJ1IjoiaXllc29naWUiLCJhIjoiY2tyNzUzM3A1M2xtYTMxbXRwMG1vdGQycCJ9.6tJBfZ58Vg7fOrBBbGb8Vg'
+}).
 
-// Create Overlay Object to Hold Overlay Layers
+addTo(EarthquakeMap);
+
+var baseMaps = {
+    "Earthquake": EarthquakeMap
+};
+
+
 var overlayMaps = {
-    "Earthquakes": earthquakes,
+    "Earthquakes": earthquakes
 };
 
 // Create Map, Passing In satelliteMap & earthquakes as Default Layers to Display on Load
-var myMap = L.map("map", {
-    center: [37.09, -95.71],
-    zoom: 2,
-    layers: [satelliteMap, earthquakes]
+var mymap = L.map('mapid').setView([51.505, -0.09], 13);
 });
 
+// Create a Layer Control + Pass in baseMaps and overlayMaps + Add the Layer Control to the Map
+L.control.layers(baseMaps).addTo(EarthquakeMap);
 
 // Retrieve earthquakesURL (USGS Earthquakes GeoJSON Data) with D3
 d3.json(earthquakesURL, function(earthquakeData) {
-    createFeatures(data.features);
-    console.log(data.features)
-  });
-
-  function createFeatures(earthquakeData) {
-
     // Function to Determine Size of Marker Based on the Magnitude of the Earthquake
     function markerSize(magnitude) {
         if (magnitude === 0) {
@@ -111,19 +85,7 @@ d3.json(earthquakesURL, function(earthquakeData) {
     // Add earthquakeData to earthquakes LayerGroups 
     }).addTo(earthquakes);
     // Add earthquakes Layer to the Map
-    earthquakes.addTo(myMap);
-
-    // Retrieve platesURL (Tectonic Plates GeoJSON Data) with D3
-    d3.json(platesURL, function(plateData) {
-        // Create a GeoJSON Layer the plateData
-        L.geoJson(plateData, {
-            color: "#DC143C",
-            weight: 2
-        // Add plateData to tectonicPlates LayerGroups 
-        }).addTo(tectonicPlates);
-        // Add tectonicPlates Layer to the Map
-        tectonicPlates.addTo(myMap);
-    });
+    earthquakes.addTo(EarthquakeMap);
 
     // Set Up Legend
     var legend = L.control({ position: "bottomright" });
@@ -141,4 +103,4 @@ d3.json(earthquakesURL, function(earthquakeData) {
         return div;
     };
     // Add Legend to the Map
-    legend.addTo(myMap);
+    legend.addTo(EarthquakeMap);
